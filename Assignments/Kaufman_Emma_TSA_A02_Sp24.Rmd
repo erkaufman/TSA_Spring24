@@ -4,6 +4,8 @@ subtitle: "Assignment 2 - Due date 02/25/24"
 author: "Emma Kaufman"
 output: pdf_document
 geometry: margin=2.54cm
+editor_options: 
+  chunk_output_type: console
 ---
 
 ## Submission Instructions
@@ -73,6 +75,21 @@ energy_ts <- ts(energy_interest, start = c(1973,1), frequency = 12)
 Compute mean and standard deviation for these three series.
 
 ```{r}
+#extracting each time series 
+biomass <- energy_ts[,1]
+renewable <- energy_ts[,2]
+hydro <- energy_ts[,3]
+
+#computing mean
+mean_bio <- mean(biomass)
+mean_renewable <- mean(renewable)
+mean_hydro <- mean(hydro)
+
+#computing std dev
+sd_bio <- sd(biomass)
+sd_renewable <- sd(renewable)
+sd_hydro <- sd(hydro)
+
 
 ```
 
@@ -81,6 +98,13 @@ Compute mean and standard deviation for these three series.
 Display and interpret the time series plot for each of these variables. Try to make your plot as informative as possible by writing titles, labels, etc. For each plot add a horizontal line at the mean of each series in a different color.
 
 ```{r}
+#Biomass_Decomposed <- stl(biomass, s.window = "periodic") 
+#plot(Biomass_Decomposed)
+plot(biomass) + abline(h= mean_bio, col = "green")
+
+plot(renewable) + abline(h= mean_renewable, col = "orange")
+
+plot(hydro) + abline(h= mean_hydro, col = "blue")
 
 ```
 
