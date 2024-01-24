@@ -22,26 +22,40 @@ When you have completed the assignment, **Knit** the text and code into a single
 
 R packages needed for this assignment:"forecast","tseries", and "dplyr". Install these packages, if you haven't done yet. Do not forget to load them before running your script, since they are NOT default packages.\\
 
-```{r, load packages}
+```{r message=FALSE, warning=FALSE, echo=FALSE}
 #Load/install required package here
 library(forecast)
 library(tseries)
 library(dplyr)
 library(lubridate)
 library(readxl)
+library(ggplot2)
 ```
 
 
 ## Data set information  
 
-Consider the data provided in the spreadsheet "Table_10.1_Renewable_Energy_Production_and_Consumption_by_Source.xlsx" on our **Data** folder. The data comes from the US Energy Information and Administration and corresponds to the December 2023 Monthly Energy Review. The spreadsheet is ready to be used. You will also find a $.csv$ version of the data "Table_10.1_Renewable_Energy_Production_and_Consumption_by_Source-Edit.csv". You may use the function $read.table()$ to import the $.csv$ data in R. Or refer to the file "M2_ImportingData_CSV_XLSX.Rmd" in our Lessons folder for functions that are better suited for importing the $.xlsx$.
+Consider the data provided in the spreadsheet 
 
-```{r, importing data}
+"Table_10.1_Renewable_Energy_Production_and_Consumption_by_Source.xlsx" 
+
+on our **Data** folder. The data comes from the US Energy Information and Administration and corresponds to the December 2023 Monthly Energy Review. The spreadsheet is ready to be used. You will also find a $.csv$ version of the data "Table_10.1_Renewable_Energy_Production_and_Consumption_by_Source-Edit.csv". You may use the function $read.table()$ to import the $.csv$ data in R. Or refer to the file "M2_ImportingData_CSV_XLSX.Rmd" in our Lessons folder for functions that are better suited for importing the $.xlsx$.
+
+```{r message=FALSE, warning=FALSE}
 #Importing data set without change the original file using read.xlsx
-energy_data1 <- read_excel(path="./Data/Table_10.1_Renewable_Energy_Production_and_Consumption_by_Source.xlsx",skip = 12, sheet="Monthly Data",col_names=FALSE) 
+energy_data1 <- read_excel(path=
+                        "./Data/Table_10.1_Renewable_Energy_Production_and_Consumption_by_Source.xlsx",
+                          skip = 12, 
+                          sheet="Monthly Data",
+                          col_names=FALSE) 
 
 #Now let's extract the column names from row 11
-read_col_names <- read_excel(path="./Data/Table_10.1_Renewable_Energy_Production_and_Consumption_by_Source.xlsx",skip = 10,n_max = 1, sheet="Monthly Data",col_names=FALSE) 
+read_col_names <- read_excel(path=
+                          "./Data/Table_10.1_Renewable_Energy_Production_and_Consumption_by_Source.xlsx",
+                             skip = 10,
+                             n_max = 1, 
+                             sheet="Monthly Data",
+                             col_names=FALSE) 
 
 colnames(energy_data1) <- read_col_names
 head(energy_data1)
@@ -54,7 +68,10 @@ You will work only with the following columns: Total Biomass Energy Production, 
 
 ```{r, selecting desired data}
 #selecting desired columns
-energy_interest <- select(energy_data1, 'Total Biomass Energy Production', 'Total Renewable Energy Production', 'Hydroelectric Power Consumption')
+energy_interest <- select(energy_data1, 
+                          'Total Biomass Energy Production', 
+                          'Total Renewable Energy Production', 
+                          'Hydroelectric Power Consumption')
 
 #previewing new dataframe
 head(energy_interest)
@@ -82,13 +99,19 @@ hydro <- energy_ts[,3]
 
 #computing mean
 mean_bio <- mean(biomass)
+mean_bio
 mean_renewable <- mean(renewable)
+mean_renewable
 mean_hydro <- mean(hydro)
+mean_hydro
 
 #computing std dev
 sd_bio <- sd(biomass)
+sd_bio
 sd_renewable <- sd(renewable)
+sd_renewable
 sd_hydro <- sd(hydro)
+sd_hydro
 
 
 ```
@@ -97,39 +120,74 @@ sd_hydro <- sd(hydro)
 ## Question 4
 Display and interpret the time series plot for each of these variables. Try to make your plot as informative as possible by writing titles, labels, etc. For each plot add a horizontal line at the mean of each series in a different color.
 
-```{r}
-#Biomass_Decomposed <- stl(biomass, s.window = "periodic") 
-#plot(Biomass_Decomposed)
-plot(biomass) + abline(h= mean_bio, col = "green")
+```{r,timeseries plots}
 
-plot(renewable) + abline(h= mean_renewable, col = "orange")
+autoplot(biomass) +
+  labs(x = "Time", 
+       y = "Total Biomass Energy Production \n(trillion BTU)", 
+       title = "Biomass Energy Production over Time") +
+  #xlab("Time") +
+  #ylab("Total Biomass Energy Production \n(trillion BTU)") +
+  #ggtitle("Biomass Energy Production over Time")+
+  geom_hline(aes(yintercept = mean_bio, color = "Mean Biomass Energy Production")) +
+  scale_color_manual(values = c("Mean Biomass Energy Production" = "green")) +
+  theme(legend.position = "bottom")
+               
+autoplot(renewable) +
+  labs(x = "Time", 
+       y = "Total Renewable Energy Production \n(trillion BTU)", 
+       title = "Renewable Energy Production over Time") +
+  #xlab("Time") +
+  #ylab("Total Renewable Energy Production \n(trillion BTU)") +
+  #ggtitle("Renewable Energy Production over Time")+
+  geom_hline(aes(yintercept = mean_renewable, color = "Mean Renewable Energy Production")) +
+  scale_color_manual(values = c("Mean Renewable Energy Production" = "orange")) +
+  theme(legend.position = "bottom")
 
-plot(hydro) + abline(h= mean_hydro, col = "blue")
-
+autoplot(hydro) +
+  labs(x = "Time", 
+       y = "Total Hydroelectric Power Consumption \n(trillion BTU)", 
+       title = "Hydroelectric Power Consumption over Time") +
+  #xlab("Time") +
+  #ylab("Total Hydroelectric Power Consumption \n(trillion BTU)") +
+  #ggtitle("Hydroelectric Power Consumption over Time")+
+  geom_hline(aes(yintercept = mean_hydro, color = "Mean Hydroelectric Power Consumption")) +
+  scale_color_manual(values = c("Mean Hydroelectric Power Consumption" = "blue")) +
+  theme(legend.position = "bottom")
 ```
+
+Interpretation:
+Hydroelectric power consumption doesn't follow a clear trend. The consumption is very noisy and overall I predict if we removed the noise the trend would be relatively flat over time. On the other hand, renewable energy and biomass energy production both show clear increases over time. They both show the rate of production increasing around the year 2000 as well, which is interesting. They both show relative dips in the year 2020.
 
 
 ## Question 5
 Compute the correlation between these three series. Are they significantly correlated? Explain your answer.
 
-```{r}
-
+```{r, renewables correlation}
+correlation <- cor(energy_ts)
+correlation
 ```
-
+Biomass energy production and total renewable energy production are significantly correlated (0.97). This makes sense if biomass is considered a renewable and is encompassed within the total renewable energy production. Hydroelectric power consumption is not significantly correlated with total renewable or total biomass energy production (-0.0017 and -0.0965). Consumption is not necessarily related to production if this hydroelectric power is not being used. 
 
 ## Question 6
 Compute the autocorrelation function from lag 1 up to lag 40 for these three variables. What can you say about these plots? Do the three of them have the same behavior?
 
-```{r}
-
+```{r, acf plots}
+#acf plots with lags 1-40
+Bio_acf= Acf(biomass,lag.max=40)
+Hydro_acf= Acf(hydro,lag.max=40)
+Renewable_acf= Acf(renewable,lag.max=40)
 ```
-
+Biomass and renewable have very similar behavior (and were highly correlated above so this makes sense). The ACF plots show that biomass and renewable energy production are auto correlated. The highest auto correlation for both is at a 1 month lag; this auto correlation decreases with each additional lag. The hydroelectric power consumption shows a periodic autocorrelation, with the highest autocorrelation displaying at a one month lag, then the next highest at a year lag. 
 
 ## Question 7
 Compute the partial autocorrelation function from lag 1 to lag 40 for these three variables. How these plots differ from the ones in Q6?
 
-```{r}
-
+```{r, pacf plots}
+#pacf plots with lags 1-40
+Bio_pacf= Pacf(biomass,lag.max=40)
+Hydro_pacf= Pacf(hydro,lag.max=40)
+Renewable_pacf= Pacf(renewable,lag.max=40)
 ```
-
+The PACF plots are very different from the ACF plots. The three pacf plots look somewhat similar. They all show the highest pacf at the first lag. For biomass energy the pac decreases by 50% or more after the first lag. Compared to the acf biomass plot which almost has the same ac at the second lag. This means that most of this autocorrelatio is coming from the intermediate relationship. The same pattern is seen for the total renewable energy production. For the hydro power consumption there is still somewhat of a periodic relationship between pac and the lag, though not nearly as pronounced as the ACF plot. The second lag on the PACF hydro plot is negative and lower in magnitude than the second lag on the ACF plot, which also suggests that most of the autocorrelation is coming from the intermediate relationship. This is why the partial autocorrelation is important! 
 
