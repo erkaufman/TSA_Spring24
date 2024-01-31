@@ -266,14 +266,59 @@ Set aside the detrended series and consider the original series again from Q1 to
 
 ### Q6
 Just by looking at the time series and the acf plots, do the series seem to have a seasonal trend? No need to run any code to answer your question. Just type in you answer below.
+> The Renewable energy series does not appear to have a seasonal trend (there is no equally spaced pattern that is apparent to me). But the Hydroelectric series does seem to have a seasonal trend. There are equally spaced peaks and troughs. The ACF plot also looks periodic, with cycles repeating every 12 month lag. 
 
 ### Q7
 Use function *lm()* to fit a seasonal means model (i.e. using the seasonal dummies) the two time series. Ask R to print the summary of the regression. Interpret the regression output. From the results which series have a seasonal trend? Do the results match you answer to Q6?
+```{r}
+#seasonal dummies for hydroelectric and total renewable
+dummies_hydro = seasonaldummy(hydro_detrend_ts)
+dummies_renew = seasonaldummy(renew_detrend_ts)
+
+#creating seasonal means model for both
+linear_trend_seasonal_hydro <- lm(hydro_detrend_ts ~ dummies_hydro)
+  print(summary(linear_trend_seasonal_hydro))
+  
+linear_trend_seasonal_renew <- lm(renew_detrend_ts ~ dummies_renew)
+  print(summary(linear_trend_seasonal_renew))
+
+```
+> Hydroelectric Power Consumption has a seasonal trend,with 46.7% of variability in the series described by seasonal component. Renewable energy production does not have a seasonal component, only 3.2% of the variability in the series is described by the seasonal component. This matches my response to question 6. 
 
 ### Q8
 Use the regression coefficients from Q7 to deseason the series. Plot the deseason series and compare with the plots from part Q1. Did anything change?
+```{r}
+# get intercept and slopes and make an equation, subtract from detrended series. 
+beta0_season_hydro <- linear_trend_seasonal_hydro$coefficients[1]   # intercept for hydro deseason
+beta0_season_renew <- linear_trend_seasonal_renew$coefficients[1]  # intercept for renew deseason
+beta1_season_hydro <- linear_trend_seasonal_hydro$coefficients[2:12]  # slope for hydro deseason
+beta1_season_renew <- linear_trend_seasonal_renew$coefficients[2:12] # slope for renew deseason
+
+#storing seasonal components
+seas_component_hydro=array(0,nobs) 
+seas_component_renew= array(0,nobs)
+
+for(i in 1:nobs){
+seas_component_hydro[i]=(beta0_season_hydro+beta1_season_hydro%*%dummies_hydro[i,]) 
+seas_component_renew[i]=(beta0_season_renew+beta1_season_renew%*%dummies_renew[i,])
+}
+
+#subtracting seasonal component from original series
+y_deseason_renew <- energy_interest[, 2] - seas_component_hydro #is this correct?!
+
+#Transform into a ts object
+ts_seasonal_component_hydro <- ts(seas_component_hydro,start = c(1973,1), frequency = 12)
+ts_seasonal_component_renew <- ts(seas_component_renew,start = c(1973,1), frequency = 12)
+
+
+```
+
 
 ### Q9
 Plot ACF and PACF for the deseason series and compare with the plots from Q1. You may use plot_grid() again to get them side by side. nut mot mandatory. Did the plots change? How?
+```{r}
+
+```
+
 
 
