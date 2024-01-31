@@ -29,8 +29,7 @@ Consider the same data you used for A2 from the spreadsheet "Table_10.1_Renewabl
 
 R packages needed for this assignment:"forecast","tseries", and "Kendall". Install these packages, if you haven't done yet. Do not forget to load them before running your script, since they are NOT default packages.\\
 
-```{r}
-#Load/install required package here
+```{r, loading and installing packages}
 #Load/install required package here
 library(forecast)
 library(tseries)
@@ -42,7 +41,7 @@ library(cowplot)
 library(gridExtra)
 ```
 
-```{r}
+```{r, importing the dataset}
 #Importing data set without changing the original file using read.xlsx
 energy_data1 <- read_excel(path=
                         "./Data/Table_10.1_Renewable_Energy_Production_and_Consumption_by_Source.xlsx",
@@ -61,7 +60,7 @@ read_col_names <- read_excel(path=
 colnames(energy_data1) <- read_col_names
 ```
 
-```{r}
+```{r, creating the dataframe we are intersted in using}
 #creating a dataframe of the columns we are interested in
 energy_interest <- select(energy_data1, 
                           'Total Biomass Energy Production', 
@@ -97,9 +96,9 @@ Renewable_pacf= autoplot(Pacf(renewable_ts,lag.max=40))
 
 #plotting all three as grid
 plot_grid(Renew_ts_plot,Renewable_acf, Renewable_pacf, nrow=3,align= 'h', rel_heights = c(2, 2, 2))
-
-
 ```
+
+\pagebreak
 
 ###Biomass Energy Production
 ```{r, q1b}
@@ -119,6 +118,8 @@ Biomass_pacf= autoplot(Pacf(biomass_ts,lag.max=40))
 plot_grid(Biomass_ts_plot,Biomass_acf, Biomass_pacf, nrow=3,align= 'h', rel_heights = c(2, 2, 2))
 
 ```
+
+\pagebreak
 
 ###Hydroelectric Consumption
 ```{r, q1c}
@@ -140,36 +141,49 @@ plot_grid(Hydro_ts_plot,Hydro_acf, Hydro_pacf, nrow=3,align= 'h', rel_heights = 
 
 ```
 
+\pagebreak
+
 ### Q2
 From the plot in Q1, do the series Total Biomass Energy Production, Total Renewable Energy Production, Hydroelectric Power Consumption appear to have a trend? If yes, what kind of trend?
 
 >Hydroelectric Power Consumption does not appear to have a trend. It oscillates above and below the mean consistently over time, and the mean appears to be consistent. Biomass and energy production both have upwards trends. They both follow a somewhat polynomial upwards trend, that could be broken up into piecewise linear trends. 
 
+\pagebreak
+
 ### Q3
 Use the *lm()* function to fit a linear trend to the three time series. Ask R to print the summary of the regression. Interpret the regression output, i.e., slope and intercept. Save the regression coefficients for further analysis.
 
 ```{r}
+#number of observations
 nobs <- nrow(energy_interest)
+
 #Create vector t
 t<- 1:nobs
 
-beta0 <- numeric(3)
-beta1 <- numeric(3)
+#from tibble to df
 energy_interest<- as.data.frame(energy_interest)
 
+#empty vectors
+beta0 <- numeric(3)
+beta1 <- numeric(3)
+
 for (i in 1:3) {
-  linear_trend <- lm(energy_interest[, i] ~ t) #define linear trend based on interested energy type
+  #define linear trend based on interested energy type
+  linear_trend <- lm(energy_interest[, i] ~ t) 
   print(summary(linear_trend))
   beta0[i] <- coef(linear_trend)[1]  # intercept
   beta1[i] <- coef(linear_trend)[2]  # slope
 }
+#intercepts
 beta0
+#slopes
 beta1
 ```
-The slopes stored in beta1 represent how much energy production/ consumption is increasing for each time step. For Biomass Energy Production the p-value is <0.05 so the slope of 0.477 is significant, and the r2 of 0.82 means that this linear trend accounts for 82% of the variability in the data. 
-For Total Renewable Energy Production the p-value is also <0.05 so the slope of 0.7 is significant, and the r2 of 0.807 means that this linear trend accounts for 80.7% of the variability in the data. 
-For the Hydroelectric Power Consumption the p-value is <0.05 so the slope of -0.009 is significant (though the magnitude is very small). But the r2 is 0.01, so this linear trend accounts for only 1% of the variability in the data. 
-*Add in explanation about the intercepts??* 
+The slopes stored in beta1 represent how much energy production/ consumption is increasing for each time step. For Biomass Energy Production the p-value is <0.05 so the slope of 0.477 is significant, and the r2 of 0.82 means that this linear trend accounts for 82% of the variability in the data. The trend is defined by a linear model of y=0.477x+134.3.
+For Total Renewable Energy Production the p-value is also <0.05 so the slope of 0.7 is significant, and the r2 of 0.807 means that this linear trend accounts for 80.7% of the variability in the data. The trend is defined by a linear model of y=0.7x+181.
+For the Hydroelectric Power Consumption the p-value is <0.05 so the slope of -0.009 is significant (though the magnitude is very small). But the r2 is 0.01, so this linear trend accounts for only 1% of the variability in the data. The trend is defined by a linear model of y=-0.009x+82.7.
+
+\pagebreak
 
 ### Q4
 Use the regression coefficients from Q3 to detrend the series. Plot the detrended series and compare with the plots from Q1. What happened? Did anything change?
@@ -214,8 +228,11 @@ i=1
   plot(detrended_series_hydro)
 
 ```
-The detrended series all are lower magnitude
+The detrended series for total renewables has shifted down, the intercept is now close to zero, and the range has decreased (the difference between the maximum and minimum values). 
 
+The detrended series for hydroelectric power has also shifted down with the intercept being closer to zero. The data seem to have a mean of around 0 now.
+
+\pagebreak
 
 ### Q5
 Plot ACF and PACF for the detrended series and compare with the plots from Q1. You may use plot_grid() again to get them side by side. but not mandatory. Did the plots change? How?
@@ -226,7 +243,7 @@ renew_detrend_ts <-ts(y_detrend_renew, start = c(1973,1), frequency = 12)
 hydro_detrend_ts <- ts(y_detrend_hydro, start = c(1973,1), frequency = 12)
 ```
 
-```{r, bio}
+```{r fig.height=8, fig.width=8}
 #acf detrended plot for biomass
 bio_acf_detrend= autoplot(Acf(bio_detrend_ts,lag.max=40))
 
@@ -236,8 +253,8 @@ bio_pacf_detrend= autoplot(Pacf(bio_detrend_ts,lag.max=40))
 #plotting comparison with plots from #1 as grid
 plot_grid(Biomass_acf, bio_acf_detrend,Biomass_pacf, bio_pacf_detrend, nrow=4,align= 'h', rel_heights = c(2, 2,2,2))
 ```
-
-```{r, renewables}
+\pagebreak
+```{r, renewables fig.height=8, fig.width=8}
 #acf detrended plot for renewables
 Renew_acf_detrend= autoplot(Acf(renew_detrend_ts,lag.max=40))
 
@@ -247,8 +264,8 @@ Renew_pacf_detrend= autoplot(Pacf(renew_detrend_ts,lag.max=40))
 #plotting comparison with plots from #1 as grid
 plot_grid(Renewable_acf, Renew_acf_detrend,Renewable_pacf, Renew_pacf_detrend, nrow=4,align= 'h', rel_heights = c(2, 2,2,2))
 ```
-
-```{r, hydro}
+\pagebreak
+```{r, hydro fig.height=8, fig.width=8}
 #acf detrended plot for hydro
 Hydro_acf_detrend= autoplot(Acf(hydro_detrend_ts,lag.max=40))
 
@@ -259,8 +276,10 @@ Hydro_pacf_detrend= autoplot(Pacf(hydro_detrend_ts,lag.max=40))
 plot_grid(Hydro_acf, Hydro_acf_detrend,Hydro_pacf, Hydro_pacf_detrend, nrow=4,align= 'h', rel_heights = c(2, 2,2,2))
 ```
 
-> The renewable graph changed a little bit, because we removed a signficant amount of variation from the data when removing the trend. Really weak seasonality in the renewable ACF detrended data becuse there are very small spikes at 12, 24, 36. 
-> we dont have a strong upward or downward trend, and see strong seasonaility in the ACF, for the pacf we see the highest magnitude partial autocorrelation at consistently spaced lags (13, 25, 37) which indicates seasonal component. 
+> The renewable graph changed a little bit, because we removed a signficant amount of variation from the data when removing the trend. We see really weak seasonality in the renewable ACF detrended data becuse there are very small spikes at 12, 24, 36. 
+> For the hydro graphs we dont have a strong upward or downward trend, and see strong seasonaility in the ACF, for the pacf we see the highest magnitude partial autocorrelation at consistently spaced lags (13, 25, 37) which indicates seasonal component. 
+
+\pagebreak
 ## Seasonal Component
 
 Set aside the detrended series and consider the original series again from Q1 to answer Q6 to Q8.
@@ -332,11 +351,12 @@ labs(color="")+
 theme(legend.position = "bottom")
 
 ```
-
+Renewables intercept changed, but the graph is nearly parallel the original at any given timestep. 
+The hydro graph intercept also changed, and there is less variation between peaks and troughs in the data without the sesaonal component than the data with the seasonal component. 
 
 ### Q9
 Plot ACF and PACF for the deseason series and compare with the plots from Q1. You may use plot_grid() again to get them side by side. but not mandatory. Did the plots change? How?
-```{r}
+```{r fig.height=8, fig.width=8}
 #renewable ACF and PACF for deseasoned data
 
 #acf deseasoned plot for renewables
@@ -350,7 +370,7 @@ plot_grid(Renewable_acf, Renew_acf_deseason,Renewable_pacf, Renew_pacf_deseason,
 
 ```
 
-```{r}
+```{r fig.height=8, fig.width=8}
 #hydro ACF and PACF for deseasoned data
 
 #acf deseasoned plot for hydroelectric
@@ -364,4 +384,5 @@ plot_grid(Hydro_acf, hydro_acf_deseason,Hydro_pacf, hydro_pacf_deseason, nrow=4,
 ```
 
 > hydro acf and pacf graphs dramatically change as a result of removing sesaonality!
+The renewable plots do not change much. makes sense because there is very little variation caused by seasonality, as confirmed by the r2 value. 
 
