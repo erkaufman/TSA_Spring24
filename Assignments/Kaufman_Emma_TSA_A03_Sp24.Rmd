@@ -259,7 +259,8 @@ Hydro_pacf_detrend= autoplot(Pacf(hydro_detrend_ts,lag.max=40))
 plot_grid(Hydro_acf, Hydro_acf_detrend,Hydro_pacf, Hydro_pacf_detrend, nrow=4,align= 'h', rel_heights = c(2, 2,2,2))
 ```
 
-
+> The renewable graph changed a little bit, because we removed a signficant amount of variation from the data when removing the trend. Really weak seasonality in the renewable ACF detrended data becuse there are very small spikes at 12, 24, 36. 
+> we dont have a strong upward or downward trend, and see strong seasonaility in the ACF, for the pacf we see the highest magnitude partial autocorrelation at consistently spaced lags (13, 25, 37) which indicates seasonal component. 
 ## Seasonal Component
 
 Set aside the detrended series and consider the original series again from Q1 to answer Q6 to Q8.
@@ -272,18 +273,19 @@ Just by looking at the time series and the acf plots, do the series seem to have
 Use function *lm()* to fit a seasonal means model (i.e. using the seasonal dummies) the two time series. Ask R to print the summary of the regression. Interpret the regression output. From the results which series have a seasonal trend? Do the results match you answer to Q6?
 ```{r}
 #seasonal dummies for hydroelectric and total renewable
-dummies_hydro = seasonaldummy(hydro_detrend_ts)
-dummies_renew = seasonaldummy(renew_detrend_ts)
+#dummies_hydro = seasonaldummy(hydro_detrend_ts)
+dummies_hydro = seasonaldummy(hydro_ts)
+dummies_renew = seasonaldummy(renewable_ts)
 
 #creating seasonal means model for both
-linear_trend_seasonal_hydro <- lm(hydro_detrend_ts ~ dummies_hydro)
+linear_trend_seasonal_hydro <- lm(hydro_ts ~ dummies_hydro)
   print(summary(linear_trend_seasonal_hydro))
   
-linear_trend_seasonal_renew <- lm(renew_detrend_ts ~ dummies_renew)
+linear_trend_seasonal_renew <- lm(renewable_ts ~ dummies_renew)
   print(summary(linear_trend_seasonal_renew))
 
 ```
-> Hydroelectric Power Consumption has a seasonal trend,with 46.7% of variability in the series described by seasonal component. Renewable energy production does not have a seasonal component, only 3.2% of the variability in the series is described by the seasonal component. This matches my response to question 6. 
+> Hydroelectric Power Consumption has a seasonal trend,with 45.6% of variability in the series described by seasonal component. Renewable energy production does not have a seasonal component, only 0.8% of the variability in the series is described by the seasonal component. This matches my response to question 6. 
 
 ### Q8
 Use the regression coefficients from Q7 to deseason the series. Plot the deseason series and compare with the plots from part Q1. Did anything change?
@@ -303,22 +305,63 @@ seas_component_hydro[i]=(beta0_season_hydro+beta1_season_hydro%*%dummies_hydro[i
 seas_component_renew[i]=(beta0_season_renew+beta1_season_renew%*%dummies_renew[i,])
 }
 
-#subtracting seasonal component from original series
-y_deseason_renew <- energy_interest[, 2] - seas_component_hydro #is this correct?!
-
 #Transform into a ts object
 ts_seasonal_component_hydro <- ts(seas_component_hydro,start = c(1973,1), frequency = 12)
 ts_seasonal_component_renew <- ts(seas_component_renew,start = c(1973,1), frequency = 12)
 
+#subtracting seasonal component from original series
+y_deseason_renew <- renewable_ts-ts_seasonal_component_renew
+y_deseason_hydro <- hydro_ts - ts_seasonal_component_hydro
+```
+
+```{r}
+#Total Renewable deseason and original data
+autoplot(y_deseason_renew,series="Observed - Seasonal Component") + 
+  autolayer(renewable_ts,series="Observed",alpha=0.5) + 
+  ylab("Total Renewable Energy Production \n(trillion BTU)") +
+xlab("") +
+labs(color="")+
+theme(legend.position = "bottom")
+
+#Total Hydroelectric deseason and original data
+autoplot(y_deseason_hydro,series="Observed - Seasonal Component") + 
+  autolayer(hydro_ts,series="Observed",alpha=0.5) + 
+  ylab("Total Hydroelectric Power Consumption \n(trillion BTU)") +
+xlab("") +
+labs(color="")+
+theme(legend.position = "bottom")
 
 ```
 
 
 ### Q9
-Plot ACF and PACF for the deseason series and compare with the plots from Q1. You may use plot_grid() again to get them side by side. nut mot mandatory. Did the plots change? How?
+Plot ACF and PACF for the deseason series and compare with the plots from Q1. You may use plot_grid() again to get them side by side. but not mandatory. Did the plots change? How?
 ```{r}
+#renewable ACF and PACF for deseasoned data
+
+#acf deseasoned plot for renewables
+Renew_acf_deseason= autoplot(Acf(y_deseason_renew,lag.max=40))
+
+#pacf deseasoned plot for renewables
+Renew_pacf_deseason= autoplot(Pacf(y_deseason_renew,lag.max=40))
+
+#plotting comparison with plots from #1 as grid
+plot_grid(Renewable_acf, Renew_acf_deseason,Renewable_pacf, Renew_pacf_deseason, nrow=4,align= 'h', rel_heights = c(2, 2,2,2))
 
 ```
 
+```{r}
+#hydro ACF and PACF for deseasoned data
 
+#acf deseasoned plot for hydroelectric
+hydro_acf_deseason= autoplot(Acf(y_deseason_hydro,lag.max=40))
+
+#pacf deseasoned plot for hydroelectric
+hydro_pacf_deseason= autoplot(Pacf(y_deseason_hydro,lag.max=40))
+
+#plotting comparison with plots from #1 as grid
+plot_grid(Hydro_acf, hydro_acf_deseason,Hydro_pacf, hydro_pacf_deseason, nrow=4,align= 'h', rel_heights = c(2, 2,2,2))
+```
+
+> hydro acf and pacf graphs dramatically change as a result of removing sesaonality!
 
