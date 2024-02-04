@@ -45,7 +45,6 @@ nobs <- nrow(raw_inflow_data)
 colnames(raw_inflow_data)=c("Month","Year", "HP1", "HP2","HP3","HP4", "HP5",
                             "HP6","HP7", "HP8","HP9","HP10", "HP11","HP12", 
                             "HP13", "HP14","HP15")
-
 #Checking data
 head(raw_inflow_data)
 str(raw_inflow_data)
@@ -62,7 +61,6 @@ head(my_date)
 #add that to inflow_data and store in a new data frame 
 inflow_data <- cbind(my_date,raw_inflow_data[,3:(3+nhydro-1)])
 head(inflow_data)
-
 ```
 
 
@@ -167,13 +165,40 @@ df_detrend <- data.frame("date"= inflow_data$my_date,
                          "observed" = inflow_data[,iHP+1], 
                          "detrend"=y_detrend)
 
-ggplot(df_detrend, aes(x=date))+
-  geom_line(aes(y=observed), color="tomato4")+
-  geom_line(aes(y=detrend), color= "forestgreen")+
-  geom_abline(beta0,beta1)
+ggplot(df_detrend, aes(x=date)) +
+  geom_line(aes(y=observed), color="tomato4") +
+  geom_line(aes(y=detrend), color= "forestgreen")
+ # geom_abline(beta0,beta1)
 ```
 
 Note that blue line is our original series, red line is our trend, green line is our original series minus the trend or in other words the detrended series. And in orange is the trend line for the detrended series which has slope 0 meaning we were able to effectively eliminate the trend with a linear model.
+
+#Check what happened to ACF after removing the linear trend
+
+```{r}
+library(cowplot)
+#install.packages("ggfortify")
+library(ggfortify)
+
+#making a timeseries of the detrended data
+ts_y_detrend <- ts(y_detrend, start= c(1931,1),frequency=12)
+
+
+plot_grid(
+  autoplot(ts_inflow_data[,iHP],ylab="Observed Inflow"),
+  autoplot(Acf(ts_inflow_data[,iHP],lag.max=40,plot=FALSE),main=NULL),
+  autoplot(ts_y_detrend,ylab="Observed Inflow - Linear Model"),
+  autoplot(Acf(ts_y_detrend,lag.max=40,plot=FALSE),main=NULL),
+  nrow=2,ncol=2
+)
+#see that after removing the trend, the autocorrelation goes down (want less time dependence, so that we need less elements in order to model future data)
+
+#want a model that represents out datasets and is a combination of other variables, how many lagged observations do we need to add? want less parameters (less error for each parameter), and want time dependence represented in initial lags instead of the larger lags (could write TS with only 12 terms, and the trend term)
+
+#look at pacf to find the value of the coefficients that we are going to add to our model
+
+
+```
 
 
 ## Seasonal Component
@@ -182,13 +207,65 @@ Now let's shift attention to the seasonal component.
 
 ```{r}
 #Use seasonal means model
-dummies= seasonaldummy(y_detrend) #seasonal dummy must use a ts object
+iHP <- 1 #this plant seems to have strong seasonal trend
 
-#linear model where y_detrend is the y dependent upon dummies 
+#create dummies
+dummies= seasonaldummy(ts_inflow_data[,iHP]) #seasonal dummy must use a ts object
 
-#i results, the intercept term is december, if you want dummiesdec, then you must run the linear model without the intercept term
+#linear model where our original data is the y dependent upon dummies 
+seas_linear_model <- lm(inflow_data[,(iHP+1)]~dummies) #iHP+1 because of the date column
+summary(seas_linear_model)
+#april is insignificant because it isn't that different from the intercept, December
+#in results, the intercept term is december, if you want dummiesdec, then you must run the linear model without the intercept term
 #r2 tells us how much variability is caused by the seasonal relationship 
+
+#storing coef
+beta0 <- seas_linear_model$coefficients[1]
+beta1 <- seas_linear_model$coefficients[2:12]
+
+#seasonal component to subtract from the original dataset
+seas_comp <- array(0,nobs)
+for(i in 1:nobs){
+  seas_comp[i] <- beta0 + beta1 %*% dummies[i,] #element by element for row i (beta1 times dummy for feb... march... etc)
+}
 ```
+
+#visualizing above
+```{r}
+ggplot(inflow_data, aes(x=my_date))+
+  geom_line(aes(y=inflow_data[,(iHP+1)]), col="black")+
+  geom_line(aes(y=seas_comp),col="orange")
+
+y_deseason <- inflow_data[,(iHP+1)] - seas_comp
+
+ggplot(inflow_data, aes(x=my_date))+
+  geom_line(aes(y=inflow_data[,(iHP+1)]), col="black")+
+  geom_line(aes(y=y_deseason),col="green")
+```
+
+## Check what happened to ACF after removing the linear trend 
+
+```{r}
+ts_y_deseason <- ts(y_deseason, start= c(1931,1),frequency=12)
+
+
+plot_grid(
+  autoplot(ts_inflow_data[,iHP],ylab="Observed Inflow"),
+  autoplot(Acf(ts_inflow_data[,iHP],lag.max=40,plot=FALSE),main=NULL),
+  autoplot(ts_y_deseason,ylab="Observed Inflow - Linear Model"),
+  autoplot(Acf(y_deseason,lag.max=40,plot=FALSE),main=NULL),
+  nrow=2,ncol=2
+)
+#we still see some seasonality in the acf, thats because we are using a constant seasonal model, and there could be some shifts in the sesaonal in the data actually... 
+
+#seasonal component is not well pronounced, or it is still there... 
+```
+## decomposing a timeseries
+```{r}
+iHP <- 1
+plot(decompose(ts_inflow_data[,iHP]))#only accepts time series objects
+```
+
 
 ##Exercise
 
