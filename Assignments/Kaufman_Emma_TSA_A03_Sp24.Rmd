@@ -237,8 +237,10 @@ i=1
 ```
 > 
 The detrended series for total renewable has shifted down, the intercept is now close to zero, and the range has decreased (the difference between the maximum and minimum values). 
+#linear detrending wasn't able to remove the trend from the dataset because we are removing a linear trend, when there isnt a linear trend in our data. There is still some linear trend occuring in the detrended data. Perfectly detrended data would have a slope of 0. 
 > 
 The detrended series for hydroelectric power consumption has also shifted down with the intercept being closer to zero. The data seem to have a mean of around 0 now. But the range between the max and min values seems to have stayed the same. 
+
 
 \pagebreak
 
@@ -288,7 +290,9 @@ plot_grid(Hydro_acf, Hydro_acf_detrend,Hydro_pacf, Hydro_pacf_detrend,
 ```
 
 > The renewable graph changed a little bit, because we removed a signficant amount of variation from the data when removing the trend. We are now able to see really weak seasonality in the renewable ACF detrended data because there are very small spikes at 12, 24, 36. 
-> For the hydro graphs we dont have a strong upward or downward trend, and see strong seasonaility in the ACF. For the pacf we see the highest magnitude partial autocorrelation at consistently spaced lags (13, 25, 37) which indicates there is a seasonal component. But there is no notable change in these graphs from the original to the detrended data. 
+#also the level of significance is reduced in the detrended data. The value of the correlation has decreased. We removed some of the time dependence from the data. Increase in magnitude of seasonal trend. 
+> For the hydro graphs we dont have a strong upward or downward trend, and see strong seasonaility in the ACF. For the pacf we see the highest magnitude partial autocorrelation at consistently spaced lags (13, 25, 37) which indicates there is a seasonal component. But there is no notable change in these graphs from the original to the detrended data.
+#didnt change the time dependence of the data, the level of the results is the sam before and after detrending the data. 
 
 \pagebreak
 ## Seasonal Component
@@ -317,7 +321,9 @@ linear_trend_seasonal_renew <- lm(renewable_ts ~ dummies_renew)
 
 ```
 
-> Hydroelectric Power Consumption has a seasonal trend, with 45.6% of variability in the series described by seasonal component. Renewable energy production does not have a strong seasonal component, only 0.8% of the variability in the series is described by the seasonal component. This matches my response to question 6. 
+> Hydroelectric Power Consumption has a seasonal trend, with 45.6% of variability in the series described by seasonal component (autoregessive seasonality). Renewable energy production does not have a strong seasonal component, only 0.8% of the variability in the series is described by the seasonal component (could be moving average seasonality...?). This matches my response to question 6. 
+#for renewables, maybe less components would work to describe the seasonality (we need a different model), the model we ran above doesn't describe the seasonality seen in these data. Also sometimes its hard to get sesaonlity out of aggregated data (solar and wind across the entire US). 
+#every coefficient is respect with the intercept term, if you dont want it then you need to run the model without the intercept term! 
 
 ### Q8
 Use the regression coefficients from Q7 to deseason the series. Plot the deseason series and compare with the plots from part Q1. Did anything change?
@@ -407,4 +413,14 @@ plot_grid(Hydro_acf, hydro_acf_deseason,Hydro_pacf, hydro_pacf_deseason, nrow=4,
 > 
 The hydro acf and pacf graphs dramatically change as a result of removing sesaonality! We no longer see the periodic pattern in the deseasoned ACF graph. The influence of later lags becomes much smaller in the ACF and PACF graphs. 
 The renewable plots do not change much at all. This makes sense because there is very little variation caused by seasonality, as confirmed by the r2 value of .008 seen above.
+#becuase the seasonality was more pronounced than trend, when we removed the seasonality it helped remove the time dependence of the data in this case. We eliminated the wave pattern, but we still have a strong dependence at lag 12 (even after you eliminate the seasonal component, you still the model to represent the previous observation of the same lag. You still carry some time information even after you remove the seasonal component). 
+When the ACF values are negeative it's because there is less than time dependence compared to the positive values.
 
+>We removed the seasonality with the seasonal means model! PACF is telling us that we need to add y(t-1) to our model. We removed the trend and pacf is telling us that where we are is dependent upon our previous observation. So a timeseries model that considers previous observaitons of our data will work. 
+>Want one or two significant magnitudes, but don't want to see high magnitude dependence for all lags. 
+> If all of the 
+
+>
+# see for the renewables that seasonailty was removed, so maybe we should try another seasonal model other than seasonal means because it does appear to have a seasonal component (something that works with stochastic trends and seasonaility.)
+
+> PACF and ACF need to be considered in tandem. 
