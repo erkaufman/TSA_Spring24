@@ -105,7 +105,8 @@ plot_grid(Renew_ts_plot,Renew_ts_dif_plot, nrow=2,align= 'h',
 
 
 ```
-> The series no longer appears to have an upwards trend. The differenced plot is centered around 0. 
+> 
+The series no longer appears to have an upwards trend after differencing. The differenced plot is centered around 0. 
 
 ### Q2
 Copy and paste part of your code for A3 where you run the regression for Total Renewable Energy Production and subtract that from the original series. This should be the code for Q3 and Q4. make sure you use the same name for you time series object that you had in A3.
@@ -173,21 +174,25 @@ ggtitle("Total Renewable Energy Production")
 Plot the ACF for the three series and compare the plots. Add the argument `ylim=c(-0.5,1)` to the autoplot() or Acf() function - whichever you are using to generate the plots - to make sure all three y axis have the same limits. Which method do you think was more efficient in eliminating the trend? The linear regression or differencing?
 
 ```{r}
+#original data
 Renewable_acf= autoplot(Acf(renewable_ts,
                             lag.max=40, 
                             ylim=c(-0.5,1)))
+#detrended data
 Renew_acf_detrend= autoplot(Acf(y_detrend_renew_ts,
                                 lag.max=40, 
                                 ylim=c(-0.5,1)))
+#differenced data
 Renew_acf_differenced= autoplot(Acf(renewable_diff_ts,
                                     lag.max=40, 
                                     ylim=c(-0.5,1)))
-
+#comparison
 plot_grid(Renewable_acf,Renew_acf_detrend, Renew_acf_differenced, ncol=3 ,align= 'h', 
           rel_heights = c(2, 2, 2))
 
 ```
-> The differencing seems more effective in eliminating the trend than the linear regression. We see overall much lower significance in the autocorrelation for the differenced plot and no more decreasing trend. The peaks for the ACF plot we do see repeat every 12 months, so they are likely from seasonality. 
+> 
+The differencing (right most plot) seems more effective in eliminating the trend than the linear regression (middle plot). We see overall much lower significance in the autocorrelation for the differenced plot and have removed time dependence more substantially in this plot. The most significant peaks for the ACF plot of differenced data we do see repeat every 12 months, so they are likely from seasonality. 
 
 ### Q5
 Compute the Seasonal Mann-Kendall and ADF Test for the original "Total Renewable Energy Production" series. Ask R to print the results. Interpret the results for both test. What is the conclusion from the Seasonal Mann Kendall test? What's the conclusion for the ADF test? Do they match what you observed in Q2? Recall that having a unit root means the series has a stochastic trend. And when a series has stochastic trend we need to use a different procedure to remove the trend.
@@ -205,9 +210,12 @@ print(adf.test(renewable_ts,alternative = "stationary"))
 #question what if s-value tells you you have an increasing trend but you are rejecting the null?
 # what do we say in relation to whether or not this matches above? 
 ```
-> For the seasonal mann kendall test our null hypothesis is that the data are stationary. Because our p-value is less than 0.05, that means we can reject the null hypothesis. So we can send our data follow a trend, and because we have a positive S-value that means there is an increasing trend. 
-> For the ADF test, our null hypothesis is that our model has a unit root. We have a p-value of 0.9 so we cannot reject the null hypothesis, and we can say that our data have a stochastic trend. 
-> This matches what we observed above, we saw an increasing trend that was not deterministic (it wasn't removed by detrending the data). 
+> 
+For the seasonal mann kendall test our null hypothesis is that the data are stationary. Because our p-value is less than 0.05, that means we can reject the null hypothesis. So we can say our data follow a trend, and because we have a positive S-value, that means there is an increasing trend. 
+> 
+For the ADF test, our null hypothesis is that our model has a unit root. We have a p-value of 0.9 so we cannot reject the null hypothesis, and we can say that our data have a stochastic trend. 
+> 
+This matches what we observed above, we saw an increasing trend that was not deterministic (it wasn't removed by detrending the data). 
 
 ### Q6
 Aggregate the original "Total Renewable Energy Production" series by year. You can use the same procedure we used in class. Store series in a matrix where rows represent months and columns represent years. And then take the columns mean using function colMeans(). Recall the goal is the remove the seasonal variation from the series to check for trend. Convert the accumulates yearly series into a time series object and plot the series using autoplot().
@@ -233,6 +241,7 @@ ggplot(energy_data_new_yearly, aes(x=my_year, y=energy_data_yearly)) +
             geom_line(color="blue") +
             geom_smooth(color="red",method="lm") 
 
+#plotting with timeseries as opposed to to df and ggplot
 energy_yearly_ts <- ts(energy_data_new_yearly[,2], 
                        start = c(1973), 
                        frequency = 1)
@@ -242,7 +251,6 @@ autoplot(energy_yearly_ts) +
        y = "Yearly energy Production \n(trillion BTU)", 
        title = "Yearly Renewable Energy Production")
 
-#why as timeseries and not as a dataframe?
 
 ```
 
@@ -273,5 +281,5 @@ print(adf.test(energy_yearly_ts,alternative = "stationary"))
 > For the Mann Kendall the p-value is less than 0.05 so we can reject the null hypothesis that the data are stationary. The S-value of 983 tells us that we have a positive trend. 
 > For the Spearman correlation test we get a coefficient of 0.911, which means there is a trend, and our p-value is much less than 0.05 so we can reject the null hypothesis that the data are stationary. 
 > For ADF, our p-value is 0.9, so we cannot reject the null. This means that the data are stochastic  and follow a trend. 
-> These results are in agreement with the stationarity tests on the monthly data.  They all say there is a trend in the data and that it is stochastic. 
+> These results are in agreement with the stationarity tests on the monthly data.  They all say there is a trend in the data and, and the ADF tells us that the trend is stochastic. 
 
