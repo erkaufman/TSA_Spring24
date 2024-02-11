@@ -244,8 +244,8 @@ Some test only work for non-seasonal data. SO let's create another series with y
 ```{r}
 iHP=1
 #Group data in yearly steps instances
-inflow_data_matrix <- matrix(ts_inflow_data[,iHP],byrow=FALSE,nrow=12)
-inflow_data_yearly <- colMeans(inflow_data_matrix)
+inflow_data_matrix <- matrix(ts_inflow_data[,iHP],byrow=FALSE,nrow=12) #populate matrix by column
+inflow_data_yearly <- colMeans(inflow_data_matrix) #mean for each column
 
 library(dplyr)  #move this to package chunk later
 my_year <- c(year(first(my_date)):year(last(my_date)))
@@ -270,9 +270,16 @@ SMKtest <- SeasonalMannKendall(ts_inflow_data[,iHP])
 print("Results for Seasonal Mann Kendall /n")
 print(summary(SMKtest))
 
+#null hypothesis is saying no trend, data is stationary, our pvalue is less than 0.05, so we are rejecting null that data are stationary
+#can conclude we have a trend in our data
+#s value is positive, so we have an increasing trend 
+
 #Use yearly date to run Mann Kendall
 print("Results of Mann Kendall on average yearly series")
 print(summary(MannKendall(inflow_data_yearly)))
+#again we have a trend, and its an increasing trend (positive score) 
+#s depends on number of observations (why we see differences in magnitude)
+
 
 ```
 
@@ -289,6 +296,8 @@ print(sp_rho)
 #with cor.test you can get test statistics
 sp_rho=cor.test(inflow_data_yearly,my_year,method="spearman")
 print(sp_rho)
+
+#see that we reject null
 ```
 
 ### Augmented Dickey Fuller (ADF)
@@ -300,9 +309,14 @@ Used to detect stochastic trend.
 print("Results for ADF test/n")
 print(adf.test(ts_inflow_data[,iHP],alternative = "stationary"))
 
+
+#reject the null, conclude that we have a trend stationary (now we need to runn Mann Kendall to confirm if there is a trend)
+
 #Now let's try the yearly data
 print("Results for ADF test on yearly data/n")
 print(adf.test(inflow_data_yearly, alternative = "stationary"))
+
+#reject null, conclude that we ahve a trend stationary (now we need to runn Mann Kendall to confirm if there is a trend)
 ```
 
 ##Exercise
