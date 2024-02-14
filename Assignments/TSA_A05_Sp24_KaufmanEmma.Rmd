@@ -1,7 +1,7 @@
 ---
 title: "ENV 790.30 - Time Series Analysis for Energy Data | Spring 2024"
 subtitle: "Assignment 5 - Due date 02/13/24"
-author: "Student Name"
+author: "Emma Kaufman"
 output: pdf_document
 geometry: margin=2.54cm
 editor_options: 
@@ -28,7 +28,8 @@ library(ggplot2)
 library(Kendall)
 library(lubridate)
 library(tidyverse)  #load this package so yon clean the data frame using pipes
-
+install.packages("xlsx")
+library(readxl)
 
 ```
 
@@ -38,17 +39,25 @@ Consider the same data you used for A04 from the spreadsheet "Table_10.1_Renewab
 
 ```{r}
 #Importing data set - using xlsx package
-energy_data <- read.xlsx(file="./Data/Table_10.1_Renewable_Energy_Production_and_Consumption_by_Source.xlsx",header=FALSE,startRow = 13,sheetIndex=1) #startRow is equivalent to skip on read.table
+energy_data <- read_excel(path=
+                        "./Data/Table_10.1_Renewable_Energy_Production_and_Consumption_by_Source.xlsx",
+                          skip = 12, 
+                          sheet="Monthly Data",
+                          col_names=FALSE) 
 
 #Now let's extract the column names from row 11 only
-read_col_names <- read.xlsx(file="./Data/Table_10.1_Renewable_Energy_Production_and_Consumption_by_Source.xlsx",header=FALSE,startRow = 11,endRow=11,sheetIndex=1)
+read_col_names <- read_excel(path=
+                          "./Data/Table_10.1_Renewable_Energy_Production_and_Consumption_by_Source.xlsx",
+                             skip = 10,
+                             n_max = 1, 
+                             sheet="Monthly Data",
+                             col_names=FALSE) 
 
 colnames(energy_data) <- read_col_names
 head(energy_data)
 
 nobs=nrow(energy_data)
 nvar=ncol(energy_data)
-
 ```
 
 ### Q1
@@ -56,8 +65,18 @@ nvar=ncol(energy_data)
 For this assignment you will work only with the following columns: Solar Energy Consumption and Wind Energy Consumption. Create a data frame structure with these two time series only and the Date column. Drop the rows with *Not Available* and convert the columns to numeric. You can use filtering to eliminate the initial rows or convert to numeric and then use the drop_na() function. If you are familiar with pipes for data wrangling, try using it!
 
 ```{r}
+#selecting desired columns
+solar_and_wind <- energy_data %>% 
+  select( 'Month',
+          'Solar Energy Consumption', 
+          'Wind Energy Consumption') %>% 
+  mutate(`Solar Energy Consumption` = as.numeric(`Solar Energy Consumption`),
+         `Wind Energy Consumption` = as.numeric(`Wind Energy Consumption`),
+         `Month` = ymd(`Month`)) %>% 
+  na.omit()
 
-
+#previewing new dataframe
+head(solar_and_wind)
 ```
 
 ### Q2
