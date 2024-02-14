@@ -87,6 +87,8 @@ lag=1
 differences=1
 renewable_diff_ts <- diff(renewable_ts, lag,differences)
 
+#when differencing we are losing one observation, take y(t) and subtract y(t-1) from that. We are difference-ing our series at lag one, resulting in us getting our series oscillating our 0 mean. Want to model th change in the series, not the level of the series
+
 Renew_ts_plot<- autoplot(renewable_ts) +
   labs(x = "Time", 
        y = "Energy Production \n(trillion BTU)", 
@@ -194,6 +196,9 @@ plot_grid(Renewable_acf,Renew_acf_detrend, Renew_acf_differenced, ncol=3 ,align=
 > 
 The differencing (right most plot) seems more effective in eliminating the trend than the linear regression (middle plot). We see overall much lower significance in the autocorrelation for the differenced plot and have removed time dependence more substantially in this plot. The most significant peaks for the ACF plot of differenced data we do see repeat every 12 months, so they are likely from seasonality. 
 
+> When we differenced, there is a drastic change in ACF (we reduced the magnitude!) We are able to see the seasonal component much clearer with differencing, before the seasonal component was blurred with the stochastic component. We need some modeling for seasonality. 
+
+
 ### Q5
 Compute the Seasonal Mann-Kendall and ADF Test for the original "Total Renewable Energy Production" series. Ask R to print the results. Interpret the results for both test. What is the conclusion from the Seasonal Mann Kendall test? What's the conclusion for the ADF test? Do they match what you observed in Q2? Recall that having a unit root means the series has a stochastic trend. And when a series has stochastic trend we need to use a different procedure to remove the trend.
 
@@ -201,7 +206,7 @@ Compute the Seasonal Mann-Kendall and ADF Test for the original "Total Renewable
 #seasonal mann-kendall test
 SMKtest <- SeasonalMannKendall(renewable_ts)
 print("Results for Seasonal Mann Kendall: ")
-print(summary(SMKtest))
+print(summary(SMKtest)) #can specify a package with ::
 
 #ADF test
 print("Results for ADF test:")
@@ -212,16 +217,17 @@ print(adf.test(renewable_ts,alternative = "stationary"))
 ```
 > 
 For the seasonal mann kendall test our null hypothesis is that the data are stationary. Because our p-value is less than 0.05, that means we can reject the null hypothesis. So we can say our data follow a trend, and because we have a positive S-value, that means there is an increasing trend. 
+All seasons/month show increasing trend over time here, but we could we decreasing S in different seasons 
 > 
 For the ADF test, our null hypothesis is that our model has a unit root. We have a p-value of 0.9 so we cannot reject the null hypothesis, and we can say that our data have a stochastic trend. 
 > 
-This matches what we observed above, we saw an increasing trend that was not deterministic (it wasn't removed by detrending the data). 
+This matches what we observed above, we saw an increasing trend that was not deterministic (it wasn't removed by detrending the data). It was removed with differencing, which means it is a stochastic trend. The ADF test confirms this.
 
 ### Q6
 Aggregate the original "Total Renewable Energy Production" series by year. You can use the same procedure we used in class. Store series in a matrix where rows represent months and columns represent years. And then take the columns mean using function colMeans(). Recall the goal is the remove the seasonal variation from the series to check for trend. Convert the accumulates yearly series into a time series object and plot the series using autoplot().
 
 ```{r}
-#remove the last 9 months because we only want whole years of data
+#remove the last 9 months because we only want whole years of data (this matters more when you have a shorter timeframe for your data)
 renewable_ts <- as.ts(renewable_ts[1:600,])
 my_date <- energy_data1$Month[1:600]
 
@@ -229,7 +235,7 @@ my_date <- energy_data1$Month[1:600]
 renewable_data_new <- cbind(my_date, renewable_ts)
 
 
-#Group data in yearly steps instances
+#Group data in yearly steps instances, each row is a year, each column is a year, take mean of all of the columns to get yearly average. This removes interannual fluctuation 
 energy_data_matrix <- matrix(renewable_ts,byrow=FALSE,nrow=12) #populate matrix by column
 energy_data_yearly <- colMeans(energy_data_matrix) #mean for each column
 
@@ -256,6 +262,7 @@ autoplot(energy_yearly_ts) +
 
 ### Q7
 Apply the Mann Kendal, Spearman correlation rank test and ADF. Are the results from the test in agreement with the test results for the monthly series, i.e., results for Q6?
+#if you don't have a seasonal component that is a good fit for seasonal mean model, then we could still see seasonality in the dataset (ex. if there is a delay in peaks or troughs). If you're suspicious of your seasonal component then you could aggregate by year (remove delay in seasonal component), allows you to look at a cleaner stationary test for your data. Removes seasonality to see how strong our trend is alone. 
 
 ```{r}
 #Mann Kendall
