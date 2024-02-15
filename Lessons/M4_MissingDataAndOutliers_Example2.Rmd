@@ -56,6 +56,8 @@ ts_wind_data <- ts(wind_data$AWND.1,frequency=12)
 
 autoplot(ts_wind_data) +
   ylab("Average Wind Speed") 
+
+#see seasonality, and that there is missing data in the middle of our timeseries dataset
 ```
 
 
@@ -65,7 +67,7 @@ tsclean() from package 'forecast' identify and replace outliers and missing valu
 
 ```{r}
 
-clean_wind_data <- tsclean(ts_wind_data)  #object should be a time series
+clean_wind_data <- tsclean(ts_wind_data)  #object should be a time series (replacing missing data AND outliers)
 
 autoplot(clean_wind_data, series="Wind Clean") +
   autolayer(ts_wind_data, series="Wind Raw") +
@@ -76,9 +78,10 @@ autoplot(clean_wind_data, series="Wind Clean") +
 
 ```
 
-If you want to handle missing data, but do not want to remove outliers, here are two other opion that will replace them using linear interpolation.
+If you want to handle missing data, but do not want to remove outliers, here are two other options that will replace them using linear interpolation.
 
-`forecast::na.interp()`
+How to take care of NAs without removing outliers in tsclean! 
+`forecast::na.interp()` 
 `zoo::na.approx()`
 
 

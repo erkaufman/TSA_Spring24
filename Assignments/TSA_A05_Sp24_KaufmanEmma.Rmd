@@ -242,15 +242,29 @@ autoplot(recent_wind_decomposed)
 Apply the `tsclean()` to both series from Q7. Did the function removed any outliers from the series? Hint: Use `autoplot()` to check if there is difference between cleaned series and original series.
 
 ```{r}
+#[use the entire dataset here!!]
 
 ```
+
+>
+ 
 
 ### Q9
 
 Redo number Q8 but now with the time series you created on Q7, i.e., the series starting in 2014. Using what `autoplot()` again what happened now?Did the function removed any outliers from the series?
 
 ```{r}
+#use just the recent data here!!
+#applying tsclean()
+clean_recent_wind_ts <- tsclean(recent_wind_ts)
+clean_recent_solar_ts<- tsclean(recent_solar_ts)
 
+#checking the differnce between the two series
+autoplot(recent_solar_ts, series="original")+
+  autolayer(clean_recent_solar_ts)
+
+autoplot(recent_wind_ts, series="original wind",alpha=0.5)+
+  autolayer(clean_recent_wind_ts)
 ```
 
-> Answer:
+> Answer:The function did remove outliers from the solar series, it did not appear to remove any outliers from the wind series.
