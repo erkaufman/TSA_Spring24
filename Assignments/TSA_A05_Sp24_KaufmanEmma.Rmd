@@ -182,7 +182,11 @@ autoplot(wind_decomposed)
   
 ```
 > 
-The trend component for both the wind and the solar data seems to be exponential in nature, increasing dramatically around 2005-2010. For random component doesn't look random for either dataset, it's periodic for both and looks like it still contains a seasonal component. 
+The trend component for both the wind and the solar data seems to be exponential in nature, increasing dramatically around 2005-2010. For random component doesn't look random for either dataset, it's periodic for both and looks like it still contains a seasonal component. We see wave movements that look evenly spaces, there is an increase in magnitude of seasonality towards the end. 
+(we are introducing seasonality at the beginning by substracting seasonal means, and it wasn't enough to remove all of the seasonality at the end. Seasonal means model wasn't a good esitmate of seasonality in this dataset.)
+(know we need a multiplicative model becuase we see sesaonal component is changing in magnitude with time)
+More variability in the seasonal component for the wind than for the solar with the seasonal mean model. 
+
 
 ### Q5
 
@@ -199,6 +203,8 @@ autoplot(wind_decomposed2)
 
 ```
 > The random component is more variable now (especially comparing before 1990 to after 1990 for solar and before 2000 to after 2000 for wind). There is still some repetitive pattern seen in the random component though. 
+Even after subtracting trend*seasonal we still didn't remove all of the seasonality. 
+We aren't centered at 0 for either random component (want expected value to be 0 so want to be centered at 0).
 
 ### Q6
 
@@ -235,6 +241,7 @@ autoplot(recent_wind_decomposed)
 ```
 
 > Answer: The random components still don't look random. They seem to follow a periodic trend that looks seasonal. This could be because we are looking at an average when subtracting seasonality. This means that any changes in seasonality over time aren't being well captured (for example if shifts in seasons are changing earlier or later).
+(Random component is now centered at 0 after we removed the earlier observations!)
 
 ## Identify and Remove outliers
 
