@@ -132,7 +132,7 @@ Wind_and_solar_plot <- ggplot((solar_and_wind),
                 color="Wind"))+
   geom_line(aes(y= `Solar Energy Consumption`, 
                 color="Solar"))+
-  labs(y='Energy Consumption')+
+  labs(y='Energy Consumption \n(trillion BTU)')+
   scale_x_date(date_breaks = "5 years", 
                date_labels = "%Y")+
   scale_colour_manual(values=c("Solar"="red",
@@ -175,12 +175,13 @@ wind_ts <- ts(solar_and_wind$`Wind Energy Consumption`,
 solar_decomposed <- decompose(solar_ts, type = "additive")
 wind_decomposed <- decompose(wind_ts, type = "additive")
 
-#plotting decomposed 
+#plotting decomposed solar
 autoplot(solar_decomposed)
+#plotting decomposed wind
 autoplot(wind_decomposed)
   
 ```
->
+> 
 The trend component for both the wind and the solar data seems to be exponential in nature, increasing dramatically around 2005-2010. For random component doesn't look random for either dataset, it's periodic for both and looks like it still contains a seasonal component. 
 
 ### Q5
@@ -233,7 +234,7 @@ autoplot(recent_wind_decomposed)
 
 ```
 
-> Answer: The random components still don't look random. They seem to follow a periodic trend that looks seasonal. This could be because we are looking at an average when subtracting seasonality. <- check about this
+> Answer: The random components still don't look random. They seem to follow a periodic trend that looks seasonal. This could be because we are looking at an average when subtracting seasonality. This means that any changes in seasonality over time aren't being well captured (for example if shifts in seasons are changing earlier or later).
 
 ## Identify and Remove outliers
 
@@ -243,10 +244,20 @@ Apply the `tsclean()` to both series from Q7. Did the function removed any outli
 
 ```{r}
 #[use the entire dataset here!!]
+#applying tsclean()
+clean_wind_ts <- tsclean(wind_ts)
+clean_solar_ts<- tsclean(solar_ts)
+
+#checking the difference between the two series
+autoplot(solar_ts, series="original")+
+  autolayer(clean_solar_ts)
+
+autoplot(wind_ts, series="original wind",alpha=0.5)+
+  autolayer(clean_wind_ts)
 
 ```
 
->
+> The function removed a lot of data from the series and identified most the variability we see towards the end of the dataset as outliers. It looks like it removed more than just outliers after around 2010. Indicating we might not want to use the earlier years of this dataset becuase it impacts the mean. 
  
 
 ### Q9
@@ -267,4 +278,5 @@ autoplot(recent_wind_ts, series="original wind",alpha=0.5)+
   autolayer(clean_recent_wind_ts)
 ```
 
-> Answer:The function did remove outliers from the solar series, it did not appear to remove any outliers from the wind series.
+> Answer:
+The function did remove a few outliers from the solar series, it did not appear to remove any outliers from the wind series when just looking at more recent years. 
