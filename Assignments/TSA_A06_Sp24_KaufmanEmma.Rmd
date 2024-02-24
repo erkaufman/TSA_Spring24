@@ -56,10 +56,26 @@ Recall that the non-seasonal ARIMA is described by three parameters ARIMA$(p,d,q
 
 (a) Consider three models: ARMA(1,0), ARMA(0,1) and ARMA(1,1) with parameters $\phi=0.6$ and $\theta= 0.9$. The $\phi$ refers to the AR coefficient and the $\theta$ refers to the MA coefficient. Use the `arima.sim()` function in R to generate $n=100$ observations from each of these three models. Then, using `autoplot()` plot the generated series in three separate graphs.
 
-```{r}
+```{r ARMA(1,0)}
+n = 100 
+phi <- 0.6 #AR coefficient
+theta <- 0.9 #MA coefficient
+p <- 1 #order of AR component
+q <- 0 #order of MA component
 
 ```
 
+```{r ARMA(0,1)}
+p <- 0 #order of AR component
+q <- 1 #order of MA component
+
+```
+
+```{r ARMA(1,1)}
+p <- 1 #order of AR component
+q <- 1 #order of MA component
+ 
+```
 (b) Plot the sample ACF for each of these models in one window to facilitate comparison (Hint: use `cowplot::plot_grid()`).
 
 
