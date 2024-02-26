@@ -30,6 +30,7 @@ library(ggthemes)
 #install.packages('sarima')
 library(sarima)
 library(dplyr)
+library(cowplot)
 ```
 
 This assignment has general questions about ARIMA Models.
@@ -41,14 +42,14 @@ Describe the important characteristics of the sample autocorrelation function (A
 * AR(2)
 
 > Answer: 
-ACF: Whether or not the data are autoregressive
-PACF: The order of the model (number of terms) is determined by the number of significant lags in PACF. 
+ACF: Whether or not the data are autoregressive (significant values at early lags and decay exponentially with time). 
+PACF: The order of the model (number of terms) is determined by the number of significant lags in PACF. An AR(2) model will have two signficnat lags in the PACF. 
 
 * MA(1)
 
 > Answer:
-ACF: gives the order of the model
-PACF: tells you if the data are autoregressive based on exponential decay in lags.
+ACF: Gives the order of the model. An MA(1) will show one significant lag
+PACF: Exponential decay in lags, "short memory" process that is less dependent upon the past. 
 
 ## Q2
 
@@ -57,59 +58,146 @@ Recall that the non-seasonal ARIMA is described by three parameters ARIMA$(p,d,q
 (a) Consider three models: ARMA(1,0), ARMA(0,1) and ARMA(1,1) with parameters $\phi=0.6$ and $\theta= 0.9$. The $\phi$ refers to the AR coefficient and the $\theta$ refers to the MA coefficient. Use the `arima.sim()` function in R to generate $n=100$ observations from each of these three models. Then, using `autoplot()` plot the generated series in three separate graphs.
 
 ```{r ARMA(1,0)}
+set.seed(100)
 n = 100 
 phi <- 0.6 #AR coefficient
 theta <- 0.9 #MA coefficient
 p <- 1 #order of AR component
 q <- 0 #order of MA component
 
+arma1_0 <- arima.sim(model = list(ar = (phi*p), ma = (theta*q)), n)
+autoplot(arma1_0)
 ```
 
 ```{r ARMA(0,1)}
 p <- 0 #order of AR component
 q <- 1 #order of MA component
 
+arma0_1 <- arima.sim(model = list(ar = (phi*p), ma = (theta*q)), n)
+autoplot(arma0_1)
 ```
 
 ```{r ARMA(1,1)}
 p <- 1 #order of AR component
 q <- 1 #order of MA component
+
+arma1_1 <- arima.sim(model = list(ar = (phi*p), ma = (theta*q)), n)
+autoplot(arma1_1)
  
 ```
 (b) Plot the sample ACF for each of these models in one window to facilitate comparison (Hint: use `cowplot::plot_grid()`).
 
-
 ```{r}
-
+plot_grid(
+  autoplot(Acf(arma0_1, lag = 40, plot=FALSE), 
+                main = "ACF ARMA(0,1)"),
+   autoplot(Acf(arma1_0, lag = 40, plot=FALSE), 
+                main = "ACF ARMA(1,0)"),
+   autoplot(Acf(arma1_1, lag = 40, plot=FALSE), 
+                main = "ACF ARMA(1,1)"),
+  ncol=3
+  )
 ```
 
 (c) Plot the sample PACF for each of these models in one window to facilitate comparison.
 
 ```{r}
-
+plot_grid(
+  autoplot(Pacf(arma0_1, lag = 40, plot=FALSE), 
+                main = "PACF ARMA(0,1)"),
+   autoplot(Pacf(arma1_0, lag = 40, plot=FALSE), 
+                main = "PACF ARMA(1,0)"),
+   autoplot(Pacf(arma1_1, lag = 40, plot=FALSE), 
+                main = "PACF ARMA(1,1)"),
+  ncol=3
+  )
 ```
 
 (d) Look at the ACFs and PACFs. Imagine you had these plots for a data set and you were asked to identify the model, i.e., is it AR, MA or ARMA and the order of each component. Would you be able identify them correctly? Explain your answer.
 
-> Answer:
+> Answer: No we cannot identify them correctly. There is seasonality in both, which makes it difficult to discern whether or not there are AR or MA patterns for a given PACF/ACF.
+For the ARMA (0,1) model we would expect to see 1 significant ACF component and an exponentially decaying PACF. 
+For the ARMA (1,0) model we would expect to see 1 significant PACF component and an exponentially decaying ACF. 
+For the ARMA (1,1) model we would expect.... 
 
 (e) Compare the PACF values R computed with the values you provided for the lag 1 correlation coefficient, i.e., does $\phi=0.6$ match what you see on PACF for ARMA(1,0), and ARMA(1,1)? Should they match?
 
-> Answer:
+> Answer:For the ARMA(1,0) we would expect to see a PACF first component with a value 0.6, but the value is 0.35.
+For the ARMA(1,1) 
 
 (f) Increase number of observations to $n=1000$ and repeat parts (b)-(e).
 
 ```{r}
+n= 1000
+p <- 1 #order of AR component
+q <- 0 #order of MA component
+arma1_0_n1000 <- arima.sim(model = list(ar = (phi*p), ma = (theta*q)), n)
+autoplot(arma1_0_n1000)
 
+p <- 0 #order of AR component
+q <- 1 #order of MA component
+arma0_1_n1000 <- arima.sim(model = list(ar = (phi*p), ma = (theta*q)), n)
+autoplot(arma0_1_n1000)
+
+p <- 1 #order of AR component
+q <- 1 #order of MA component
+arma1_1_n1000 <- arima.sim(model = list(ar = (phi*p), ma = (theta*q)), n)
+autoplot(arma1_1_n1000)
 ```
+
+```{r}
+#acf for simulations with n=1000
+plot_grid(
+  autoplot(Acf(arma0_1_n1000, lag = 40, plot=FALSE), 
+                main = "ACF ARMA(0,1)"),
+   autoplot(Acf(arma1_0_n1000, lag = 40, plot=FALSE), 
+                main = "ACF ARMA(1,0)"),
+   autoplot(Acf(arma1_1_n1000, lag = 40, plot=FALSE), 
+                main = "ACF ARMA(1,1)"),
+  ncol=3
+  )
+```
+
+```{r}
+#pacf for simulations with n=1000
+plot_grid(
+  autoplot(Pacf(arma0_1_n1000, lag = 40, plot=FALSE), 
+                main = "PACF ARMA(0,1)"),
+   autoplot(Pacf(arma1_0_n1000, lag = 40, plot=FALSE), 
+                main = "PACF ARMA(1,0)"),
+   autoplot(Pacf(arma1_1_n1000, lag = 40, plot=FALSE), 
+                main = "PACF ARMA(1,1)"),
+  ncol=3
+  )
+```
+
+
+(d.2) Look at the ACFs and PACFs. Imagine you had these plots for a data set and you were asked to identify the model, i.e., is it AR, MA or ARMA and the order of each component. Would you be able identify them correctly? Explain your answer.
+
+> Answer:
+
+(e.2) Compare the PACF values R computed with the values you provided for the lag 1 correlation coefficient, i.e., does $\phi=0.6$ match what you see on PACF for ARMA(1,0), and ARMA(1,1)? Should they match?
+
+> Answer:
 
 ## Q3
 
 Consider the ARIMA model $y_t=0.7*y_{t-1}-0.25*y_{t-12}+a_t-0.1*a_{t-1}$
 
 (a) Identify the model using the notation ARIMA$(p,d,q)(P,D,Q)_ s$, i.e., identify the integers $p,d,q,P,D,Q,s$ (if possible) from the equation.
+> Answer:
+p (# of AR terms) = 2?
+q (# of MA terms) = 1
+a_t (error) = a_t
+seasonal terms?! 
+
 
 (b) Also from the equation what are the values of the parameters, i.e., model coefficients.
+> Answer:
+phi_1 = 0.7
+phi_2 = -0.25
+theta_1 = -0.1 
+
 
 ## Q4
 
