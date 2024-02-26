@@ -53,7 +53,7 @@ my_date <- my(my_date)  #function my from package lubridate
 
 #add that to inflow_data and store in a new data frame 
 inflow_data <- cbind(my_date,raw_inflow_data[,3:(3+nhydro-1)])
-head(inflow_data)
+head(inflow_data,24)
 
 #Remove last for rows by replacing current data frame
 inflow_data <- inflow_data[1:(nobs-4),]
@@ -110,6 +110,7 @@ The random component is the time series without seasonal and trend component. Le
 
 #Using R decompose function
 iHP=1
+<<<<<<< HEAD:Lessons/M4_MissingDataAndOutliers_Example1_EK.Rmd
 decompose_inflow_data <-decompose(ts_inflow_data[,iHP],"additive") #input needs to be a TS
 plot(decompose_inflow_data) 
 #output has all the components:
@@ -124,6 +125,10 @@ plot(decompose_inflow_data)
 
 #Inspect random component for extreme values (outliers)
 #calculate statistics to understand +/- 3 sd from mean
+=======
+decompose_inflow_data <- decompose(ts_inflow_data[,iHP],"additive")
+plot(decompose_inflow_data)
+>>>>>>> e4213812a97db48c087fe2cdde82d932cc27b25d:Lessons/M4_MissingDataAndOutliers_Example1.Rmd
 
 inflow_random <- decompose_inflow_data$random   
 mean_inflow <- mean(inflow_random)  
@@ -238,6 +243,7 @@ ggplot(df_inflow_random, aes(x=date, y=inflow)) +
             geom_line() +
             geom_abline(slope=0,intercept=3*sd_inflow,color="red") +
             geom_abline(slope=0,intercept=-3*sd_inflow,color="red")
+
 ```
 
 Note we still seem to have some outliers. You can repeat the process until the next extreme value is not an outlier or write a loop as below.
