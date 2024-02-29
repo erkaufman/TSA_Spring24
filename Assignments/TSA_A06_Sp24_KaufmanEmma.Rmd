@@ -232,18 +232,26 @@ Consider the ARIMA model $y_t=0.7*y_{t-1}-0.25*y_{t-12}+a_t-0.1*a_{t-1}$
 (a) Identify the model using the notation ARIMA$(p,d,q)(P,D,Q)_ s$,
     i.e., identify the integers $p,d,q,P,D,Q,s$ (if possible) from the
     equation. 
-    > Answer: 
-    ARIMA(1,0,1)(1,0,0)_12
-    p (# of AR terms) = 1
-    P (# of SAR terms) = 1
-    q (# of MA terms) = 1
+   
+   > Answer: 
+   > SARIMA(1,0,1)(1,0,0)_12
+   
+   > p (# of AR terms) = 1
+   
+   > P (# of SAR terms) = 1
+   
+   > q (# of MA terms) = 1
 
 (b) Also from the equation what are the values of the parameters, i.e.,
     model coefficients. 
-    > Answer: 
-    phi_1 = 0.7 
-    phi_12 = -0.25 
-    theta_1 =-0.1
+  
+  > Answer: 
+  
+  > phi_1 = 0.7 
+  
+  > phi_12 = -0.25 
+  
+  > theta_1 =-0.1
 
 ## Q4
 
@@ -263,6 +271,8 @@ Sarima0_1_1_0 <- sim_sarima(model= list(sar= (phi), ma= (theta), nseasons=12), n
 Sarima0_1_1_0_ts <- ts(Sarima0_1_1_0)
 autoplot(Sarima0_1_1_0_ts)
 ```
+> Answer: 
+ It is centered about the mean and has repetitive peaks/troughs which is indicitive of seasonality, but there is variability in the mangitude of the max/min so it is hard to tell whether or not it is seasonal. I would need to look at the ACF/PACF to confirm is there was seasonality. 
 
 ## Q5
 
@@ -281,5 +291,5 @@ plot_grid(
   )
 ```
 > Answer:
-There is clear seasonality in the ACF plot (decaying signficant lags at 12, 24, and 36). This indicates a seasonal AR component (which is what we want and what we modeled!)
+There is clear seasonality in the ACF plot (decaying signficant lags at 12, 24, and 36). The PACF also has a single positive and significant spike at lag 12, both of which indicate a seasonal AR component (which is what we want and what we modeled!)
 Because we have one MA component with a coefficient of theta=0.5 we would expect the first ACF lag to have a magnitude of 0.5, and that the PACF graph would have a slow decay. We do see that the first lag in the ACF is significant, though the magnitude is not what we would expect. Additionally, the magnitude of the PACF does have a slow decay. So it is kind of clear, but would likely be more obvious if seasonality were removed. 
