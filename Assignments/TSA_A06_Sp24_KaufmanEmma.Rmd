@@ -63,11 +63,22 @@ function (ACF) plot and the partial sample autocorrelation function
 > significant lags in PACF. An AR(2) model will have two signficnat lags
 > in the PACF.
 
+
+review in class:
+# AR ACF: slow decay on correlation coefficients indiciating there is a trend
+#PACF: tells you the order of the trend (how many previous observations do we need to model that trend component). We look for a cutoff. After a certain lag the rest aren't statistically distinct from zero, order should cut off after lag 2 in this case. 
+#differencing will remove stochasitic and linear trends, AR component can remove the trend (if it's not stochastic)
+#I is the differencing
+
 -   MA(1)
 
 > Answer: ACF: Gives the order of the model. An MA(1) will show one
 > significant lag PACF: Exponential decay in lags, "short memory"
 > process that is less dependent upon the past.
+
+review in class:
+# MA PACF: slow decay
+#ACF: cut off after statistically distinct coefficients (should see a cutoff after 1 lag). 
 
 ## Q2
 
@@ -93,7 +104,7 @@ theta <- 0.9 #MA coefficient
 p <- 1 #order of AR component
 q <- 0 #order of MA component
 
-arma1_0 <- arima.sim(model = list(ar = (phi*p), ma = (theta*q)), n)
+arma1_0 <- arima.sim(model = list(ar = (phi*p), ma = (theta*q)), n) #AR(1) coefficient is 0.6
 autoplot(arma1_0)
 ```
 
@@ -101,7 +112,7 @@ autoplot(arma1_0)
 p <- 0 #order of AR component
 q <- 1 #order of MA component
 
-arma0_1 <- arima.sim(model = list(ar = (phi*p), ma = (theta*q)), n)
+arma0_1 <- arima.sim(model = list(ar = (phi*p), ma = (theta*q)), n) #ma coefficient is 0.9 (order 1)
 autoplot(arma0_1)
 ```
 
@@ -109,7 +120,7 @@ autoplot(arma0_1)
 p <- 1 #order of AR component
 q <- 1 #order of MA component
 
-arma1_1 <- arima.sim(model = list(ar = (phi*p), ma = (theta*q)), n)
+arma1_1 <- arima.sim(model = list(ar = (phi*p), ma = (theta*q)), n) #ar and ma component 
 autoplot(arma1_1)
  
 ```
@@ -203,7 +214,7 @@ plot_grid(
                 main = "PACF ARMA(0,1)"),
    autoplot(Pacf(arma1_0_n1000, lag = 40, plot=FALSE), 
                 main = "PACF ARMA(1,0)"),
-   autoplot(Pacf(arma1_1_n1000, lag = 40, plot=FALSE), 
+   autoplot(Pacf(arma1_1_n1000, lag = 40, plot=FALSE), #could do ylim(0,1) if you only want positive 
                 main = "PACF ARMA(1,1)"),
   ncol=3
   )
@@ -240,7 +251,10 @@ Consider the ARIMA model $y_t=0.7*y_{t-1}-0.25*y_{t-12}+a_t-0.1*a_{t-1}$
    
    > P (# of SAR terms) = 1
    
+   > s = 12
+   
    > q (# of MA terms) = 1
+   #d and D are more than 0 because there is no constant term so there must have been differencing done before fitting (can't tell how many times and if it was seasonal or not)... or it came from a 0 mean process (but that is hard to find in reality).
 
 (b) Also from the equation what are the values of the parameters, i.e.,
     model coefficients. 
@@ -251,7 +265,7 @@ Consider the ARIMA model $y_t=0.7*y_{t-1}-0.25*y_{t-12}+a_t-0.1*a_{t-1}$
   
   > phi_12 = -0.25 
   
-  > theta_1 =-0.1
+  > theta_1 = -0.1 #by convention this should be reported as positive (negative is in the equation).
 
 ## Q4
 
@@ -265,7 +279,7 @@ need differencing, therefore $d=D=0$. Plot the generated series using
 `autoplot()`. Does it look seasonal?
 
 ```{r}
-phi <- 0.8
+phi <- 0.8 #sar
 theta <- 0.5
 Sarima0_1_1_0 <- sim_sarima(model= list(sar= (phi), ma= (theta), nseasons=12), n=1000)
 Sarima0_1_1_0_ts <- ts(Sarima0_1_1_0)
@@ -287,9 +301,11 @@ plot_grid(
                 main = "ACF SARMA(0,1)(1,0)"),
    autoplot(Pacf(Sarima0_1_1_0_ts, lag = 40, plot=FALSE), 
                 main = "PACF SARMA(0,1)(1,0)"),
-  nrow=2
+  ncol=2
   )
 ```
 > Answer:
 There is clear seasonality in the ACF plot (decaying signficant lags at 12, 24, and 36). The PACF also has a single positive and significant spike at lag 12, both of which indicate a seasonal AR component (which is what we want and what we modeled!)
+#for nonseasonal lag we just look from 1-11
 Because we have one MA component with a coefficient of theta=0.5 we would expect the first ACF lag to have a magnitude of 0.5, and that the PACF graph would have a slow decay. We do see that the first lag in the ACF is significant, though the magnitude is not what we would expect. Additionally, the magnitude of the PACF does have a slow decay. So it is kind of clear, but would likely be more obvious if seasonality were removed. 
+(MA coefficients shouldn't match the magnitude, the coefficient doesn't come from these plots! it comes from the arma function)
