@@ -281,4 +281,6 @@ Pacf(ARIMA_autofit$residuals, lag.max=40)
 ```
 
 ## Discussion: Which one to do? ARIMA or SARIMA?
-
+> with original series you dont need to worry about adding the seasonal component back. When you do remove it you're assuming that the mean is constant over time
+>SARMIMA allows the seasonal component to be modeled by the sarima equations and can account for variation (something that isn't constant over time)
+> need to understand how to remove seasonality because not every model allows for seasonality (some optimization models can't handle temporal tendincies )
