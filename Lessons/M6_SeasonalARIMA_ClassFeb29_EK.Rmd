@@ -185,9 +185,9 @@ ns_diff <- nsdiffs(ts_electricity_price[,"Residential"])
 cat("Number of seasonal differencing needed: ",ns_diff)
 
 #Lets difference the series once at lag 12 to remove the seasonal trend.
-residential_price_seas_diff <- diff(ts_electricity_price[,"Residential"],lag=12, differences=1)
-residential_price_trend_diff <- diff(ts_electricity_price[,"Residential"],lag =1, differences=1) #diff done on orig series
-residential_price_both_diff <- diff(residential_price_trend_diff,lag =12, differences=1)
+residential_price_seas_diff <- diff(ts_electricity_price[,"Residential"],lag=12, differences=1) #preform differencing once at seasonal lag 12
+residential_price_trend_diff <- diff(ts_electricity_price[,"Residential"],lag =1, differences=1) #diff done on orig series (lag 1)
+residential_price_both_diff <- diff(residential_price_trend_diff,lag =12, differences=1) #taking the differenced at lag 1 series and differencing again
 
 #Comparing ACFs
 plot_grid(
@@ -210,11 +210,11 @@ plot_grid(
                   main = "Seasonal-Differenced Residential"),
   autoplot(Pacf(residential_price_trend_diff, lag = 40, plot=FALSE),  
                   main = "Trend-Differenced Residential"),
-  autoplot(Acf(residential_price_both_diff, lag = 40, plot=FALSE),  
+  autoplot(Pacf(residential_price_both_diff, lag = 40, plot=FALSE),  
                   main = "Twice-Differenced Residential"),
   nrow=2
 )
-
+#is pacf lag 1 is close to 1 then you might have a unit root (stoachastic trend), need to difference the series! 
 
 #Plot ACF and PACF for twice-differenced series - Steps 3 (order of non-seasonal) and 5 ) order of seasonal
 plot_grid(
@@ -230,16 +230,37 @@ plot_grid(
 ## Manually fitting seasonal ARIMA to original series
 
 ```{r}
+Model1 <- Arima(ts_electricity_price[,"Residential"], order= c(1,1,1), seasonal= c(0,1,1), include.drift=FALSE)
+print(Model1)
 
-
+plot_grid(
+  autoplot(Model1$residuals),
+  autoplot(Acf(Model1$residuals, lag = 40, plot=FALSE)),
+  autoplot(Pacf(Model1$residuals, lag = 40, plot=FALSE)),
+  nrow=1
+)
+#add plot grid!
 ```
 
 ## Automatically fitting seasonal ARIMA to original series
 
 ```{r}
 
+Model2 <- auto.arima(ts_electricity_price[,"Residential"])
+print(Model2)
+#slightly better than our model from before (lower AIC), but similar 
 
 
+plot_grid(
+  autoplot(Model2$residuals),
+  autoplot(Acf(Model2$residuals, lag = 40, plot=FALSE)),
+  autoplot(Pacf(Model2$residuals, lag = 40, plot=FALSE)),
+  nrow=1
+)
+
+autoplot(ts_electricity_price[,"Residential"], series = "Original")+
+  autolayer(Model1$fitted,series="ARIMA(1,1,1)(0,1,1)")+
+  autolayer(Model2$fitted,series="ARIMA(2,0,0)(0,1,1)")
 
 ```
 
@@ -250,7 +271,12 @@ Recall from M5 that the best fit for the non-seasonal time series is a ARIMA(2,1
 
 ```{r}
 
+ARIMA_autofit <- auto.arima(deseasonal_residential_price, max.D=0, max.P=0,max.Q=0)
 
+par(mfrow=c(1,3))
+ts.plot(ARIMA_autofit$residuals)
+Acf(ARIMA_autofit$residuals, lag.max= 40)
+Pacf(ARIMA_autofit$residuals, lag.max=40)
 
 ```
 

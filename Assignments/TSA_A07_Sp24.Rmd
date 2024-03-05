@@ -22,7 +22,16 @@ Packages needed for this assignment: "forecast","tseries". Do not forget to load
 
 ```{r}
 #Load/install required package here
-
+library(forecast)
+library(tseries)
+library(ggplot2)
+library(Kendall)
+library(lubridate)
+library(tidyverse)
+library(ggthemes)
+library(sarima)
+library(dplyr)
+library(cowplot)
 ```
 
 ## Importing and processing the data set
