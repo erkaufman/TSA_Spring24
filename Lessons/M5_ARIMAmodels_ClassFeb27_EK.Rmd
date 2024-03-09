@@ -169,7 +169,6 @@ The new ACF plot show a slow decay which is a sign of non-stationarity.
 Always check for stationarity before fitting ARIMA models. This will help specify component **d** of the ARIMA(p,d,q). If there is a trend you need to set **d=1**.
 
 ```{r}
-
 #Run ADF
 print(adf.test(deseasonal_residential_price))
 

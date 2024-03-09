@@ -129,17 +129,29 @@ These three function take a few main arguments:
 
 ```{r}
 #Model 1: Arithmetic mean on original data
+Model1 <- meanf(ts_electricity_price[,"All.sectors"], h=12) #h is forescating horizon
+summary(Model1) #simple mean, all forecasts are the same and equal to the mean of the series
+plot(Model1) 
+```
+
+> bad results! because we have trend and seasonality, we didn't account for this
 
 
+```{r}
 #Model 2: Arithmetic mean on deseas data
-
+Model2 <- meanf(deseasonal_allsectors_price, h=12) 
+summary(Model2)
+plot(Model2) #average mean doesnt work if you have trend on your dataset because you wont replicate the trend
 
 #Model 3: Seasonal naive on original data
-
+Model3 <- snaive(ts_electricity_price[,"All.sectors"], h=12) 
+summary(Model3)
+plot(Model3) #replicating the last 12 of the original data, actually looks better than the mean!
 
 #Model 4: Naive on deseas data
-
-
+Model4 <- naive(deseasonal_allsectors_price, h=12) 
+summary(Model4)
+plot(Model4)  #looking at the last year without seasonality
 ```
 
 
@@ -170,17 +182,30 @@ We will try these models on the original dataset and the deaseason electricity p
 
 ```{r}
 # Model 5: Simple moving average on deseasonal data
+Model5<- sma(deseasonal_allsectors_price, h=12)
 
+autoplot(deseasonal_allsectors_price, series= "Deseasonal")+
+  autolayer(Model5$forecast, series= "SMA")
 
 # Model 6: Simple moving average on original data
+Model6 <- sma(ts_electricity_price[,"All.sectors"], h=12)
 
+autoplot(ts_electricity_price[,"All.sectors"], series= "Original")+
+  autolayer(Model6$forecast, series= "SMA- Model6")
 
 # Model 7:  Simple exponential smoothing on deseasonal data
+Model7 <- ses(deseasonal_allsectors_price, h=12)
 
+plot(Model7)
 
 # Model 8:  Simple exponential smoothing on original data
+Model8 <- ses(ts_electricity_price[,"All.sectors"], h=12)
+plot(Model8)
+#not very good at incorporating seasonality, generate forecast look at the error, and fix next forecast?? for just historical data?
 
-
+autoplot(ts_electricity_price[,"All.sectors"],
+         series="original") +
+  autolayer(Model8$fitted, series= "ES-Model8") #errors for historical data are low, but how good can the model keep up with forecasting if were not updating parameters? 
 
 
 ```
@@ -196,13 +221,26 @@ When forecasting with ARIMA models, first you will need to fit the model with th
 ```{r}
 
 # Model 9:  SARIMA on original data
+Model9 <- auto.arima(ts_electricity_price[,"All.sectors"])
+Model9_for <- forecast(Model9, h=12)
 
+plot(Model9_for)
 
-
+autoplot(ts_electricity_price[,"All.sectors"],
+         series= "Original")+
+  autolayer(Model9$fitted, series="SARIMA")+
+  autolayer(Model9_for$mean,series="SARIMA_for")
 
 # Model 10:  ARIMA on deseasonal data
+Model10 <- auto.arima(deseasonal_allsectors_price, seasonal=FALSE)
+Model10_for <- forecast(Model10, h=12)
+plot(Model10_for)
 
-
+autoplot(deseasonal_allsectors_price,
+         series= "Deseasonal")+
+  autolayer(Model10$fitted, series="SARIMA")+
+  autolayer(Model10_for$mean,series="SARIMA_for")
+#replicated trend into the future! smaller errors (because we have removed variability by removing seasonal component), not fair to compare errors w arima and sarima because they have different variability! 
 
 ```
 
