@@ -140,7 +140,7 @@ print(summary(MannKendall(deseasonal_ng)))
 ```
 
 > Answer: The p-value for the ADF test is 0.01 which is less than 0.05 so we can reject the null hypothesis. The data are either stationary or deterministic. The p-value for the MK test is much less than 0.05 so we can reject the null for the MK test. This means that the data follow a deterministic trend. We can use the MK test instead of the SMK because we have deseasoned the data. Becuase we have confirmed that the data have a trend, we need to difference our data. 
-
+#because there is no stoachastic trend you might be able to model the deterministic trend with an AR component (but would need more AR terms in that instance)
 
 ### Q4
 
@@ -166,6 +166,8 @@ ndiffs(deseasonal_ng_diff)
 Based on the results from q3 I differenced the data once. Then I ran the tests again to see if one difference was enough. The MK test produces a p-value of 0.8, which is greater than 0.05 so we cannot reject the null hypothesis that the data are stationary. This means that differencing once was enough. This is confirmed when using the ndiffs() function. On the deseasonal data it tells us we only need to difference once. After differencing once, it returns we don't need to difference anymore! We know that d=1. Now we can examine p and q. 
 
 ```{r}
+#look at the ACF and PACF after differenceing the series -> from this it would be good to do a 1,1,1 model for the deseasoned series (you only get MA term after you differentiate the series)
+
 #ACF and PACF for differenced and desesaoned data
 deseason_difference_acf <- autoplot(Acf(deseasonal_ng_diff, lag = 40, plot=FALSE))
 deseason_difference_pacf <- autoplot(Pacf(deseasonal_ng_diff, lag = 40, plot=FALSE))
@@ -308,6 +310,7 @@ cat("The number of seasonal diffs (D) needed to achieve stationarity is:", D)
 plot_grid(
 autoplot(Pacf(ng_ts)),
 autoplot(Acf(ng_ts)))
+#then would need to plot acf and pacf for differenced data 
 
 ```
 
