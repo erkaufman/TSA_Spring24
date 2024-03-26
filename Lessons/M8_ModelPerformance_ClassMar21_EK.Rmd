@@ -181,7 +181,7 @@ $MAPE = \sum|Actual - Forecast|/Actual/n*100$
 ```{r}
 observed <- electricity_price_processed[(nobs-n_for+1):nobs, "All.sectors"]
 #Model 1: Arithmetic mean
-MEAN_scores <- accuracy(MEAN_seas$mean,observed)  #store the performance metrics
+MEAN_scores <- accuracy(MEAN_seas$mean,observed)  #store the performance metrics (comparing the forecast from the model with the observed )
 plot(MEAN_seas)  #plot forecasts
 
 #Model 2: Seasonal naive 
@@ -201,11 +201,13 @@ plot(SARIMA_for)
 Now we will create a data frame that combines performance metrics for all the three models. You can choose one metric to help you choose among models. For example let's say we want the model with lowest RMSE.
 
 ````{r}
+#putting all of the scores together to make a table for easier comparison 
 #create data frame
 seas_scores <- as.data.frame(rbind(MEAN_scores, SNAIVE_scores, SARIMA_scores))
 row.names(seas_scores) <- c("MEAN", "SNAIVE","SARIMA")
 
 #choose model with lowest RMSE
+#ask r to find the row with the lowest RMSE
 best_model_index <- which.min(seas_scores[,"RMSE"])
 cat("The best model by RMSE is:", row.names(seas_scores[best_model_index,]))                       
                             
@@ -214,6 +216,7 @@ cat("The best model by RMSE is:", row.names(seas_scores[best_model_index,]))
 SARIMA was the best fit for the seasonal data. If you want generate a table to compare model accuracy and help visualize the results here is a suggestion on how to include a table on your Rmd report. You can use the `kable_styling(latex_options="striped")` to highlight the model that leads to minimum RMSE.
 
 ```{r}
+#creating tables! 
 kbl(seas_scores, 
       caption = "Forecast Accuracy for Seasonal Data",
       digits = array(5,ncol(seas_scores))) %>%
