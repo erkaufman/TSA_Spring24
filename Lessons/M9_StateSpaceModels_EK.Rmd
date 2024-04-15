@@ -4,7 +4,7 @@ author: "Luana Lima"
 output: pdf_document
 always_allow_html: true
 editor_options: 
-  chunk_output_type: inline
+  chunk_output_type: console
 ---
 
 ## Setting R code chunk options
@@ -265,7 +265,7 @@ kbl(seas_scores,
       digits = array(5,ncol(seas_scores))) %>%
   kable_styling(full_width = FALSE, position = "center") %>%
   #highlight model with lowest RMSE
-  kable_styling(latex_options="striped", stripe_index = which.min(seas_scores[,"RMSE"]))
+ kable_styling(latex_options="striped", stripe_index = which.min(seas_scores[,"RMSE"]))
 ```
 ## Plotting everything together
 

@@ -1,0 +1,19 @@
+---
+title: "April4Regressors"
+author: "Emma Kaufman"
+date: "2024-04-04"
+output: pdf_document
+---
+how to add regressors to model
+```{r}
+regressors <- as.matrix(data.frame(fourier(ts_daily_train, K= c(2,12)), "temp"=temp_train))
+
+#fit arima model with fourier terms as exogenous regressors
+#seasonal = FALSE is the same as P=D=Q=0
+
+ARIMA_Four_fit_REG <- auto.arima(ts_daily_train, 
+seasonal=FALSE,
+lambda= 0,
+xreg=regressors)
+```
+
